@@ -1,10 +1,17 @@
 import os
 import time
 import requests
+import argparse
 from google.cloud import firestore
 
-# Force emulator host before initializing client
-os.environ["FIRESTORE_EMULATOR_HOST"] = "127.0.0.1:8080"
+parser = argparse.ArgumentParser(description="Populate Firestore with Pokemon data.")
+parser.add_argument("--prod", action="store_true", help="Populate production Firestore instead of local emulator.")
+parser.add_argument("--project", type=str, default="pokedex", help="The Google Cloud project ID (defaults to 'pokedex').")
+args = parser.parse_args()
+
+if not args.prod:
+    # Force emulator host before initializing client if not in prod mode
+    os.environ["FIRESTORE_EMULATOR_HOST"] = "127.0.0.1:8080"
 
 def get_pokemon_id_from_url(url):
     return int(url.strip("/").split("/")[-1])
@@ -63,8 +70,12 @@ def parse_evolution_chain(chain_data):
     return stages
 
 def main():
-    print("Connecting to Firestore emulator at 127.0.0.1:8080...")
-    db = firestore.Client(project="pokedex")
+    if args.prod:
+        print(f"Connecting to production Firestore for project '{args.project}'...")
+    else:
+        print(f"Connecting to Firestore emulator at 127.0.0.1:8080 for project '{args.project}'...")
+        
+    db = firestore.Client(project=args.project)
     
     print("Fetching first generation Pokemon list...")
     list_url = "https://pokeapi.co/api/v2/pokemon?limit=151"
