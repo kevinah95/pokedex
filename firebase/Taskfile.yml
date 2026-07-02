@@ -9,7 +9,7 @@ tasks:
   start:
     desc: Start the local Firestore emulator suite
     cmds:
-      - npx -y firebase-tools@latest emulators:start --project pokedex
+      - npx -y firebase-tools@latest emulators:start --project pokedex-kevinah95
 
   seed:
     desc: Seed the local Firestore emulator with PokeAPI data

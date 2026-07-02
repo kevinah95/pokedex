@@ -96,7 +96,7 @@ class PokemonRemoteDataSource(
 
     override fun fetchPokemonList(): Flow<List<Pokemon>> = flow {
         val host = getFirestoreEmulatorHost()
-        val url = "http://$host:8080/v1/projects/pokedex/databases/(default)/documents/pokemons?pageSize=200"
+        val url = "http://$host:8080/v1/projects/pokedex-kevinah95/databases/(default)/documents/pokemons?pageSize=200"
         val response = httpClient.get(url).body<FirestoreListResponse>()
         val pokemonList = response.documents?.map { doc ->
             val number = doc.fields.number?.integerValue?.toIntOrNull() ?: 0
@@ -110,7 +110,7 @@ class PokemonRemoteDataSource(
 
     override fun fetchPokemonDetail(number: Int): Flow<PokemonDetail> = flow {
         val host = getFirestoreEmulatorHost()
-        val url = "http://$host:8080/v1/projects/pokedex/databases/(default)/documents/pokemons/$number"
+        val url = "http://$host:8080/v1/projects/pokedex-kevinah95/databases/(default)/documents/pokemons/$number"
         val doc = httpClient.get(url).body<FirestoreDocument>()
         val fields = doc.fields
         

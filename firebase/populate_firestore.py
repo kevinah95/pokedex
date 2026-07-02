@@ -6,7 +6,7 @@ from google.cloud import firestore
 
 parser = argparse.ArgumentParser(description="Populate Firestore with Pokemon data.")
 parser.add_argument("--prod", action="store_true", help="Populate production Firestore instead of local emulator.")
-parser.add_argument("--project", type=str, default="pokedex", help="The Google Cloud project ID (defaults to 'pokedex').")
+parser.add_argument("--project", type=str, default="pokedex-kevinah95", help="The Google Cloud project ID (defaults to 'pokedex-kevinah95').")
 args = parser.parse_args()
 
 if not args.prod:
