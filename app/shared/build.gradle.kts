@@ -84,6 +84,9 @@ kotlin {
 
             // Compose Icons
             implementation(compose.materialIconsExtended)
+
+            // Navigation 3
+            implementation(libs.jetbrains.navigation3.ui)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
