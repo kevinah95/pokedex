@@ -15,9 +15,14 @@
  */
 package io.github.kevinah95.pokedex
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.graphics.Color
+import io.github.kevinah95.pokedex.presentation.ui.PokedexTheme
+import io.github.kevinah95.pokedex.presentation.ui.getPokemonTypeColor
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -88,7 +93,7 @@ fun App(
 ) {
     val backStack = rememberNavBackStack(navigationConfig, Route.PokemonList)
 
-    MaterialTheme {
+    PokedexTheme {
         NavDisplay(
             backStack = backStack,
             onBack = {
@@ -106,7 +111,7 @@ fun App(
                                 TopAppBar(
                                     title = {
                                         Text(
-                                            text = "First Generation Pokedex",
+                                            text = "Pokédex",
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onPrimary
                                         )
@@ -145,6 +150,7 @@ fun App(
                                                 name = pokemon.name,
                                                 number = pokemon.number,
                                                 imageUrl = pokemon.imageUrl,
+                                                types = pokemon.types,
                                                 modifier = Modifier.clickable {
                                                     backStack.add(Route.PokemonDetail(pokemon.number))
                                                 }
@@ -177,14 +183,31 @@ fun App(
 }
 
 @Composable
-fun PokemonCard(name: String, number: Int, imageUrl: String, modifier: Modifier = Modifier) {
+fun PokemonCard(
+    name: String,
+    number: Int,
+    imageUrl: String,
+    types: List<String>,
+    modifier: Modifier = Modifier
+) {
     val formattedNumber = "#" + number.toString().padStart(3, '0')
+    val firstType = types.firstOrNull() ?: "normal"
+    val typeColor = getPokemonTypeColor(firstType)
+
+    val isDark = isSystemInDarkTheme()
+    val baseColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+    val cardBg = Color(
+        red = typeColor.red * 0.12f + baseColor.red * 0.88f,
+        green = typeColor.green * 0.12f + baseColor.green * 0.88f,
+        blue = typeColor.blue * 0.12f + baseColor.blue * 0.88f,
+        alpha = 1f
+    )
 
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = cardBg
         )
     ) {
         Column(
@@ -202,13 +225,14 @@ fun PokemonCard(name: String, number: Int, imageUrl: String, modifier: Modifier 
             Text(
                 text = formattedNumber,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
+                color = typeColor,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = name,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }

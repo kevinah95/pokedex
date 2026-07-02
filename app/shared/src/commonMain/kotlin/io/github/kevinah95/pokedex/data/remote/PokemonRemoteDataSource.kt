@@ -102,7 +102,8 @@ class PokemonRemoteDataSource(
             val number = doc.fields.number?.integerValue?.toIntOrNull() ?: 0
             val name = doc.fields.name?.stringValue ?: ""
             val imageUrl = doc.fields.imageUrl?.stringValue ?: ""
-            Pokemon(name = name, number = number, imageUrl = imageUrl)
+            val types = doc.fields.types?.arrayValue?.values?.mapNotNull { it.stringValue } ?: emptyList()
+            Pokemon(name = name, number = number, imageUrl = imageUrl, types = types)
         }?.sortedBy { it.number } ?: emptyList()
         emit(pokemonList)
     }.flowOn(ioDispatcher)

@@ -21,7 +21,8 @@ import kotlinx.serialization.Serializable
 data class Pokemon(
     val name: String,
     val number: Int,
-    val imageUrl: String = ""
+    val imageUrl: String = "",
+    val types: List<String> = emptyList()
 )
 
 @Serializable
