@@ -15,11 +15,7 @@
  */
 package io.github.kevinah95.pokedex.data.remote
 
-import io.github.kevinah95.pokedex.data.remote.dto.PokemonDetailResponse
-import io.github.kevinah95.pokedex.data.remote.dto.PokemonSpeciesResponse
-import io.github.kevinah95.pokedex.data.remote.dto.EvolutionChainResponse
-import io.github.kevinah95.pokedex.data.remote.dto.EvolutionLinkDto
-import io.github.kevinah95.pokedex.data.remote.dto.PokemonListResponse
+import io.github.kevinah95.pokedex.di.getFirestoreEmulatorHost
 import io.github.kevinah95.pokedex.domain.entity.Pokemon
 import io.github.kevinah95.pokedex.domain.entity.PokemonDetail
 import io.github.kevinah95.pokedex.domain.entity.EvolutionStage
@@ -31,8 +27,67 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.serialization.Serializable
 
-private const val POKEMON_URL = "https://pokeapi.co/api/v2/pokemon?limit=151"
+@Serializable
+data class FirestoreListResponse(
+    val documents: List<FirestoreDocument>? = null
+)
+
+@Serializable
+data class FirestoreDocument(
+    val name: String,
+    val fields: FirestoreFields
+)
+
+@Serializable
+data class FirestoreFields(
+    val number: FirestoreIntegerField? = null,
+    val name: FirestoreStringField? = null,
+    val imageUrl: FirestoreStringField? = null,
+    val types: FirestoreArrayField? = null,
+    val height: FirestoreDoubleField? = null,
+    val weight: FirestoreDoubleField? = null,
+    val species: FirestoreStringField? = null,
+    val stats: FirestoreArrayField? = null,
+    val evolutionChain: FirestoreArrayField? = null
+)
+
+@Serializable
+data class FirestoreIntegerField(val integerValue: String)
+
+@Serializable
+data class FirestoreStringField(val stringValue: String)
+
+@Serializable
+data class FirestoreDoubleField(
+    val doubleValue: Double? = null,
+    val integerValue: String? = null
+)
+
+@Serializable
+data class FirestoreArrayField(val arrayValue: FirestoreArrayValue)
+
+@Serializable
+data class FirestoreArrayValue(val values: List<FirestoreValue> = emptyList())
+
+@Serializable
+data class FirestoreValue(
+    val stringValue: String? = null,
+    val mapValue: FirestoreMapValue? = null
+)
+
+@Serializable
+data class FirestoreMapValue(val fields: FirestoreMapFields)
+
+@Serializable
+data class FirestoreMapFields(
+    val name: FirestoreStringField? = null,
+    val value: FirestoreIntegerField? = null,
+    val number: FirestoreIntegerField? = null,
+    val imageUrl: FirestoreStringField? = null,
+    val evolutionTrigger: FirestoreValue? = null
+)
 
 class PokemonRemoteDataSource(
     private val httpClient: HttpClient,
@@ -40,96 +95,56 @@ class PokemonRemoteDataSource(
 ) : IPokemonRemoteDataSource {
 
     override fun fetchPokemonList(): Flow<List<Pokemon>> = flow {
-        val response = httpClient.get(POKEMON_URL).body<PokemonListResponse>()
-        val pokemonList = response.results.mapIndexed { index, dto ->
-            val number = dto.url.split("/").filter { it.isNotEmpty() }.last().toIntOrNull() ?: (index + 1)
-            val formattedName = dto.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-            Pokemon(
-                name = formattedName,
-                number = number
-            )
-        }
+        val host = getFirestoreEmulatorHost()
+        val url = "http://$host:8080/v1/projects/pokedex/databases/(default)/documents/pokemons?pageSize=200"
+        val response = httpClient.get(url).body<FirestoreListResponse>()
+        val pokemonList = response.documents?.map { doc ->
+            val number = doc.fields.number?.integerValue?.toIntOrNull() ?: 0
+            val name = doc.fields.name?.stringValue ?: ""
+            val imageUrl = doc.fields.imageUrl?.stringValue ?: ""
+            Pokemon(name = name, number = number, imageUrl = imageUrl)
+        }?.sortedBy { it.number } ?: emptyList()
         emit(pokemonList)
     }.flowOn(ioDispatcher)
 
     override fun fetchPokemonDetail(number: Int): Flow<PokemonDetail> = flow {
-        val detailUrl = "https://pokeapi.co/api/v2/pokemon/$number"
-        val detailResp = httpClient.get(detailUrl).body<PokemonDetailResponse>()
-
-        val speciesUrl = "https://pokeapi.co/api/v2/pokemon-species/$number"
-        val speciesResp = httpClient.get(speciesUrl).body<PokemonSpeciesResponse>()
-
-        val speciesGenus = speciesResp.genera
-            .firstOrNull { it.language.name == "en" }?.genus
-            ?: speciesResp.genera.firstOrNull()?.genus
-            ?: "Unknown"
-
-        val evoUrl = speciesResp.evolutionChain.url
-        val evoResp = httpClient.get(evoUrl).body<EvolutionChainResponse>()
-
-        val evolutionList = mutableListOf<EvolutionStage>()
-        parseEvolutionChain(evoResp.chain, evolutionList)
-
-        val domainStats = detailResp.stats.map { statSlot ->
-            val formattedName = when (statSlot.stat.name.lowercase()) {
-                "hp" -> "HP"
-                "attack" -> "ATK"
-                "defense" -> "DEF"
-                "special-attack" -> "SATK"
-                "special-defense" -> "SDEF"
-                "speed" -> "SPD"
-                else -> statSlot.stat.name.uppercase()
-            }
-            PokemonStat(
-                name = formattedName,
-                value = statSlot.baseStat
-            )
-        }
-
-        val imageUrl = detailResp.sprites.other?.home?.frontDefault ?: ""
-        val types = detailResp.types.map { it.type.name }
-
+        val host = getFirestoreEmulatorHost()
+        val url = "http://$host:8080/v1/projects/pokedex/databases/(default)/documents/pokemons/$number"
+        val doc = httpClient.get(url).body<FirestoreDocument>()
+        val fields = doc.fields
+        
         val detail = PokemonDetail(
-            number = detailResp.id,
-            name = detailResp.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-            imageUrl = imageUrl,
-            types = types,
-            height = detailResp.height,
-            weight = detailResp.weight,
-            species = speciesGenus,
-            evolutionChain = evolutionList,
-            stats = domainStats
+            number = fields.number?.integerValue?.toIntOrNull() ?: number,
+            name = fields.name?.stringValue ?: "",
+            imageUrl = fields.imageUrl?.stringValue ?: "",
+            types = fields.types?.arrayValue?.values?.mapNotNull { it.stringValue } ?: emptyList(),
+            height = fields.height?.doubleValue ?: fields.height?.integerValue?.toDoubleOrNull() ?: 0.0,
+            weight = fields.weight?.doubleValue ?: fields.weight?.integerValue?.toDoubleOrNull() ?: 0.0,
+            species = fields.species?.stringValue ?: "",
+            stats = fields.stats?.arrayValue?.values?.mapNotNull { value ->
+                val fieldsMap = value.mapValue?.fields
+                val statName = fieldsMap?.name?.stringValue
+                val statValue = fieldsMap?.value?.integerValue?.toIntOrNull()
+                if (statName != null && statValue != null) {
+                    PokemonStat(name = statName, value = statValue)
+                } else null
+            } ?: emptyList(),
+            evolutionChain = fields.evolutionChain?.arrayValue?.values?.mapNotNull { value ->
+                val fieldsMap = value.mapValue?.fields
+                val stageNum = fieldsMap?.number?.integerValue?.toIntOrNull()
+                val stageName = fieldsMap?.name?.stringValue ?: fieldsMap?.imageUrl?.stringValue?.split("/")?.lastOrNull()?.replace(".png", "") ?: "Unknown"
+                val stageImg = fieldsMap?.imageUrl?.stringValue
+                val trigger = fieldsMap?.evolutionTrigger?.stringValue
+                if (stageNum != null && stageImg != null) {
+                    EvolutionStage(
+                        number = stageNum,
+                        name = stageName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                        imageUrl = stageImg,
+                        evolutionTrigger = trigger
+                    )
+                } else null
+            } ?: emptyList()
         )
-
         emit(detail)
     }.flowOn(ioDispatcher)
-
-    private fun parseEvolutionChain(link: EvolutionLinkDto, outList: MutableList<EvolutionStage>) {
-        val name = link.species.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-        val id = link.species.url.split("/").filter { it.isNotEmpty() }.last().toIntOrNull() ?: 1
-
-        val triggerDetails = link.evolutionDetails.firstOrNull()
-        val trigger = when {
-            triggerDetails == null -> null
-            triggerDetails.minLevel != null -> "Level ${triggerDetails.minLevel}"
-            triggerDetails.trigger?.name == "trade" -> "Trade"
-            triggerDetails.trigger?.name == "use-item" -> "Use Item"
-            else -> triggerDetails.trigger?.name?.replaceFirstChar { it.titlecase() } ?: "Evolve"
-        }
-
-        val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/$id.png"
-
-        outList.add(
-            EvolutionStage(
-                number = id,
-                name = name,
-                imageUrl = imageUrl,
-                evolutionTrigger = trigger
-            )
-        )
-
-        for (nextLink in link.evolvesTo) {
-            parseEvolutionChain(nextLink, outList)
-        }
-    }
 }

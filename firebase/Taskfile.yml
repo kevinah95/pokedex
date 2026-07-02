@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  setup:
+    desc: Install python requirements for seeding
+    cmds:
+      - pip install google-cloud-firestore requests
+
+  start:
+    desc: Start the local Firestore emulator suite
+    cmds:
+      - npx -y firebase-tools@latest emulators:start --project pokedex
+
+  seed:
+    desc: Seed the local Firestore emulator with PokeAPI data
+    cmds:
+      - python populate_firestore.py
+
+  deploy:
+    desc: Deploy Firestore rules and indexes to production
+    cmds:
+      - npx -y firebase-tools@latest deploy --only firestore

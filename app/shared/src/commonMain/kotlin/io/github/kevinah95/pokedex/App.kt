@@ -40,9 +40,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import io.github.kevinah95.pokedex.presentation.pokemon.PokemonViewModel
 import io.github.kevinah95.pokedex.presentation.pokemon.PokemonDetailViewModel
 import io.github.kevinah95.pokedex.presentation.ui.PokemonDetailScreen
@@ -140,6 +144,7 @@ fun App(
                                             PokemonCard(
                                                 name = pokemon.name,
                                                 number = pokemon.number,
+                                                imageUrl = pokemon.imageUrl,
                                                 modifier = Modifier.clickable {
                                                     backStack.add(Route.PokemonDetail(pokemon.number))
                                                 }
@@ -172,7 +177,7 @@ fun App(
 }
 
 @Composable
-fun PokemonCard(name: String, number: Int, modifier: Modifier = Modifier) {
+fun PokemonCard(name: String, number: Int, imageUrl: String, modifier: Modifier = Modifier) {
     val formattedNumber = "#" + number.toString().padStart(3, '0')
 
     Card(
@@ -188,6 +193,12 @@ fun PokemonCard(name: String, number: Int, modifier: Modifier = Modifier) {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = name,
+                modifier = Modifier.size(80.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = formattedNumber,
                 style = MaterialTheme.typography.labelMedium,

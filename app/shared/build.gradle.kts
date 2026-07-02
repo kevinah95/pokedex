@@ -87,6 +87,7 @@ kotlin {
 
             // Navigation 3
             implementation(libs.jetbrains.navigation3.ui)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
