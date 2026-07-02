@@ -15,7 +15,6 @@
  */
 package io.github.kevinah95.pokedex
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -60,41 +59,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
 import coil3.compose.AsyncImage
-import io.github.kevinah95.pokedex.presentation.pokemon.PokemonViewModel
+import io.github.kevinah95.pokedex.presentation.navigation.Route
+import io.github.kevinah95.pokedex.presentation.navigation.navigationConfig
 import io.github.kevinah95.pokedex.presentation.pokemon.PokemonDetailViewModel
-import io.github.kevinah95.pokedex.presentation.ui.PokemonDetailScreen
+import io.github.kevinah95.pokedex.presentation.pokemon.PokemonViewModel
 import io.github.kevinah95.pokedex.presentation.ui.PokedexTheme
+import io.github.kevinah95.pokedex.presentation.ui.PokemonDetailScreen
 import io.github.kevinah95.pokedex.presentation.ui.getPokemonTypeColor
 import org.koin.compose.viewmodel.koinViewModel
 
-import androidx.navigation3.ui.NavDisplay
-import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.savedstate.serialization.SavedStateConfiguration
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
-
-@Serializable
-sealed interface Route : NavKey {
-    @Serializable
-    data object PokemonList : Route
-
-    @Serializable
-    data class PokemonDetail(val number: Int) : Route
-}
-
-private val navigationConfig = SavedStateConfiguration {
-    serializersModule = SerializersModule {
-        polymorphic(NavKey::class) {
-            subclass(Route.PokemonList::class, Route.PokemonList.serializer())
-            subclass(Route.PokemonDetail::class, Route.PokemonDetail.serializer())
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
