@@ -19,3 +19,9 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.wasm.nodejs.Was
     val npm = rootProject.extensions.getByType<org.jetbrains.kotlin.gradle.targets.wasm.npm.WasmNpmExtension>()
     nodeJs.packageManagerExtension.set(npm)
 }
+
+subprojects {
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions { freeCompilerArgs.add("-Xexpect-actual-classes") }
+    }
+}

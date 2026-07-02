@@ -9,6 +9,8 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(21)
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -28,13 +30,13 @@ kotlin {
         browser()
     }
     
-    androidLibrary {
+    android {
        namespace = "io.github.kevinah95.pokedex.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
     
        compilerOptions {
-           jvmTarget = JvmTarget.JVM_11
+           jvmTarget.set(JvmTarget.JVM_21)
        }
        androidResources {
            enable = true
