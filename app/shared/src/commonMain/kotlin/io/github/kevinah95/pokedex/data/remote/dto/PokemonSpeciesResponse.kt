@@ -13,13 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.kevinah95.pokedex.data.remote
+package io.github.kevinah95.pokedex.data.remote.dto
 
-import io.github.kevinah95.pokedex.domain.entity.Pokemon
-import io.github.kevinah95.pokedex.domain.entity.PokemonDetail
-import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-interface IPokemonRemoteDataSource {
-    fun fetchPokemonList(): Flow<List<Pokemon>>
-    fun fetchPokemonDetail(number: Int): Flow<PokemonDetail>
-}
+@Serializable
+data class PokemonSpeciesResponse(
+    val genera: List<PokemonGenusDto>,
+    @SerialName("evolution_chain") val evolutionChain: EvolutionChainUrlDto
+)
+
+@Serializable
+data class PokemonGenusDto(
+    val genus: String,
+    val language: LanguageDto
+)
+
+@Serializable
+data class LanguageDto(
+    val name: String
+)
+
+@Serializable
+data class EvolutionChainUrlDto(
+    val url: String
+)

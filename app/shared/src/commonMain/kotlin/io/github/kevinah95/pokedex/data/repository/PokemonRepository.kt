@@ -17,6 +17,7 @@ package io.github.kevinah95.pokedex.data.repository
 
 import io.github.kevinah95.pokedex.data.remote.IPokemonRemoteDataSource
 import io.github.kevinah95.pokedex.domain.entity.Pokemon
+import io.github.kevinah95.pokedex.domain.entity.PokemonDetail
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -28,5 +29,9 @@ class PokemonRepository(
 
     override val pokemonList: Flow<List<Pokemon>> =
         remoteDataSource.fetchPokemonList()
+            .flowOn(defaultDispatcher)
+
+    override fun fetchPokemonDetail(number: Int): Flow<PokemonDetail> =
+        remoteDataSource.fetchPokemonDetail(number)
             .flowOn(defaultDispatcher)
 }

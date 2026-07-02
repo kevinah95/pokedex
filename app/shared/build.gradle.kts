@@ -77,6 +77,13 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.kotlinx.serialization.json)
+
+            // Coil 3
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
+
+            // Compose Icons
+            implementation(compose.materialIconsExtended)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

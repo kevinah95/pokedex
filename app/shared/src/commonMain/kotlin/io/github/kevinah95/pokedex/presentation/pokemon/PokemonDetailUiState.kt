@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.kevinah95.pokedex.data.remote
+package io.github.kevinah95.pokedex.presentation.pokemon
 
-import io.github.kevinah95.pokedex.domain.entity.Pokemon
 import io.github.kevinah95.pokedex.domain.entity.PokemonDetail
-import kotlinx.coroutines.flow.Flow
 
-interface IPokemonRemoteDataSource {
-    fun fetchPokemonList(): Flow<List<Pokemon>>
-    fun fetchPokemonDetail(number: Int): Flow<PokemonDetail>
-}
+data class PokemonDetailUiState(
+    val isLoading: Boolean = false,
+    val pokemonDetail: PokemonDetail? = null,
+    val error: String? = null
+)

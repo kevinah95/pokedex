@@ -16,6 +16,7 @@
 package io.github.kevinah95.pokedex
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,66 +39,96 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.kevinah95.pokedex.presentation.pokemon.PokemonViewModel
+import io.github.kevinah95.pokedex.presentation.pokemon.PokemonDetailViewModel
+import io.github.kevinah95.pokedex.presentation.ui.PokemonDetailScreen
 import org.koin.compose.viewmodel.koinViewModel
+
+sealed interface Screen {
+    data object List : Screen
+    data class Detail(val pokemonNumber: Int) : Screen
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App(viewModel: PokemonViewModel = koinViewModel()) {
-    val state by viewModel.uiState.collectAsState()
+fun App(
+    viewModel: PokemonViewModel = koinViewModel(),
+    detailViewModel: PokemonDetailViewModel = koinViewModel()
+) {
+    var currentScreen by remember { mutableStateOf<Screen>(Screen.List) }
 
     MaterialTheme {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "First Generation Pokedex",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .background(MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator()
-                } else if (state.error != null) {
-                    Text(
-                        text = "Error: ${state.error}",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 160.dp),
-                        contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(state.pokemonList) { pokemon ->
-                            PokemonCard(
-                                name = pokemon.name,
-                                number = pokemon.number
+        when (val screen = currentScreen) {
+            is Screen.List -> {
+                val state by viewModel.uiState.collectAsState()
+
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = {
+                                Text(
+                                    text = "First Generation Pokedex",
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.primary
                             )
+                        )
+                    }
+                ) { paddingValues ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .background(MaterialTheme.colorScheme.background),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (state.isLoading) {
+                            CircularProgressIndicator()
+                        } else if (state.error != null) {
+                            Text(
+                                text = "Error: ${state.error}",
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 160.dp),
+                                contentPadding = PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(state.pokemonList) { pokemon ->
+                                    PokemonCard(
+                                        name = pokemon.name,
+                                        number = pokemon.number,
+                                        modifier = Modifier.clickable {
+                                            currentScreen = Screen.Detail(pokemon.number)
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
+            }
+            is Screen.Detail -> {
+                PokemonDetailScreen(
+                    number = screen.pokemonNumber,
+                    viewModel = detailViewModel,
+                    onBack = { currentScreen = Screen.List },
+                    onNavigateTo = { num -> currentScreen = Screen.Detail(num) }
+                )
             }
         }
     }

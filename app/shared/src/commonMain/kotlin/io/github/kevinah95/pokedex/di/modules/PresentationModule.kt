@@ -16,9 +16,11 @@
 package io.github.kevinah95.pokedex.di.modules
 
 import io.github.kevinah95.pokedex.presentation.pokemon.PokemonViewModel
+import io.github.kevinah95.pokedex.presentation.pokemon.PokemonDetailViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val presentationModule = module {
     viewModel { PokemonViewModel(get()) }
+    viewModel { PokemonDetailViewModel(get()) }
 }

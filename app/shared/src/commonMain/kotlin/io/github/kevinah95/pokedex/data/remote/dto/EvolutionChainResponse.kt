@@ -13,39 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.kevinah95.pokedex.domain.entity
+package io.github.kevinah95.pokedex.data.remote.dto
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Pokemon(
-    val name: String,
-    val number: Int
+data class EvolutionChainResponse(
+    val chain: EvolutionLinkDto
 )
 
 @Serializable
-data class PokemonDetail(
-    val number: Int,
-    val name: String,
-    val imageUrl: String,
-    val types: List<String>,
-    val height: Double, // in decimeters
-    val weight: Double, // in hectograms
-    val species: String, // genus description
-    val evolutionChain: List<EvolutionStage>,
-    val stats: List<PokemonStat>
+data class EvolutionLinkDto(
+    @SerialName("evolution_details") val evolutionDetails: List<EvolutionDetailsDto> = emptyList(),
+    @SerialName("evolves_to") val evolvesTo: List<EvolutionLinkDto> = emptyList(),
+    val species: NamedApiResourceDto
 )
 
 @Serializable
-data class EvolutionStage(
-    val number: Int,
-    val name: String,
-    val imageUrl: String,
-    val evolutionTrigger: String? = null // e.g. "Level 25" or "Trade"
+data class EvolutionDetailsDto(
+    @SerialName("min_level") val minLevel: Int? = null,
+    val trigger: NamedApiResourceDto? = null
 )
 
 @Serializable
-data class PokemonStat(
-    val name: String, // e.g. "HP", "ATK", "DEF", "SATK", "SDEF", "SPD"
-    val value: Int
+data class NamedApiResourceDto(
+    val name: String,
+    val url: String
 )

@@ -16,8 +16,10 @@
 package io.github.kevinah95.pokedex.data.repository
 
 import io.github.kevinah95.pokedex.domain.entity.Pokemon
+import io.github.kevinah95.pokedex.domain.entity.PokemonDetail
 import kotlinx.coroutines.flow.Flow
 
 interface IPokemonRepository {
     val pokemonList: Flow<List<Pokemon>>
+    fun fetchPokemonDetail(number: Int): Flow<PokemonDetail>
 }
