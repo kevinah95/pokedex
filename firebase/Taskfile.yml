@@ -1,0 +1,65 @@
+version: '3'
+
+tasks:
+  setup:
+    desc: Install python requirements for seeding
+    cmds:
+      - pip install google-cloud-firestore requests
+
+  start:
+    desc: Start the local Firestore emulator suite
+    cmds:
+      - npx -y firebase-tools@latest emulators:start --project pokedex-kevinah95
+
+  seed:
+    desc: Seed the local Firestore emulator with PokeAPI data
+    cmds:
+      - python populate_firestore.py
+
+  deploy:
+    desc: Deploy Firestore rules and indexes to production
+    cmds:
+      - npx -y firebase-tools@latest deploy --only firestore
+
+  seed:prod:
+    desc: Seed the production Firestore with PokeAPI data
+    summary: |
+      Fetches Gen 1 Pokémon from PokeAPI and writes them to your production Firestore database.
+      Make sure to authenticate with GCP first using `gcloud auth application-default login`.
+
+      Example:
+        task firebase:seed:prod PROJECT_ID=pokedex-prod
+    requires:
+      vars: [PROJECT_ID]
+    cmds:
+      - python populate_firestore.py --prod --project {{.PROJECT_ID}}
+
+  login:
+    desc: Authenticate the Firebase CLI
+    cmds:
+      - npx -y firebase-tools@latest login
+
+  create:project:
+    desc: Create a new Firebase project
+    summary: |
+      Creates a brand new globally unique Firebase project and binds your local workspace to it.
+
+      Example:
+        task firebase:create:project PROJECT_ID=pokedex-prod-12345
+    requires:
+      vars: [PROJECT_ID]
+    cmds:
+      - npx -y firebase-tools@latest projects:create {{.PROJECT_ID}} --display-name "Pokedex"
+      - npx -y firebase-tools@latest use {{.PROJECT_ID}}
+
+  create:db:
+    desc: Create the default Firestore database
+    summary: |
+      Provisions the default Firestore database instance inside your active Firebase project.
+
+      Example:
+        task firebase:create:db LOCATION=us-central1
+    requires:
+      vars: [LOCATION]
+    cmds:
+      - npx -y firebase-tools@latest firestore:databases:create "(default)" --location={{.LOCATION}}
