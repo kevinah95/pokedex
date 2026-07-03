@@ -15,4 +15,5 @@
  */
 package io.github.kevinah95.pokedex.di
 
-expect fun getFirestoreEmulatorHost(): String
+expect fun getFirestoreBaseUrl(): String
+

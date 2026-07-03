@@ -15,7 +15,7 @@
  */
 package io.github.kevinah95.pokedex.data.remote
 
-import io.github.kevinah95.pokedex.di.getFirestoreEmulatorHost
+import io.github.kevinah95.pokedex.di.getFirestoreBaseUrl
 import io.github.kevinah95.pokedex.domain.entity.Pokemon
 import io.github.kevinah95.pokedex.domain.entity.PokemonDetail
 import io.github.kevinah95.pokedex.domain.entity.EvolutionStage
@@ -95,8 +95,8 @@ class PokemonRemoteDataSource(
 ) : IPokemonRemoteDataSource {
 
     override fun fetchPokemonList(): Flow<List<Pokemon>> = flow {
-        val host = getFirestoreEmulatorHost()
-        val url = "http://$host:8080/v1/projects/pokedex-kevinah95/databases/(default)/documents/pokemons?pageSize=200"
+        val baseUrl = getFirestoreBaseUrl()
+        val url = "$baseUrl/pokemons?pageSize=200"
         val response = httpClient.get(url).body<FirestoreListResponse>()
         val pokemonList = response.documents?.map { doc ->
             val number = doc.fields.number?.integerValue?.toIntOrNull() ?: 0
@@ -109,8 +109,8 @@ class PokemonRemoteDataSource(
     }.flowOn(ioDispatcher)
 
     override fun fetchPokemonDetail(number: Int): Flow<PokemonDetail> = flow {
-        val host = getFirestoreEmulatorHost()
-        val url = "http://$host:8080/v1/projects/pokedex-kevinah95/databases/(default)/documents/pokemons/$number"
+        val baseUrl = getFirestoreBaseUrl()
+        val url = "$baseUrl/pokemons/$number"
         val doc = httpClient.get(url).body<FirestoreDocument>()
         val fields = doc.fields
         
