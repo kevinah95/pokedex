@@ -45,4 +45,4 @@ Finally, seed the production database with all 151 Generation 1 Pokémon:
 ```bash
 task firebase:seed:prod PROJECT_ID=<YOUR_PROJECT_ID>
 ```
-*(Make sure you have run `gcloud auth application-default login` on your local terminal if the seeding script encounters GCP authorization issues connecting to Firestore).*
+*(Make sure you have run `gcloud auth application-default login` on your local terminal if the seeding script encounters GCP authorization issues connecting to Firestore). After that, run `gcloud auth application-default set-quota-project pokedex-kevinah95`.*

@@ -15,4 +15,14 @@
  */
 package io.github.kevinah95.pokedex.di
 
-actual fun getFirestoreEmulatorHost(): String = "127.0.0.1"
+import kotlinx.browser.window
+
+actual fun getFirestoreBaseUrl(): String {
+    val hostname = window.location.hostname
+    return if (hostname == "localhost" || hostname == "127.0.0.1" || hostname == "0.0.0.0") {
+        "http://127.0.0.1:8080/v1/projects/pokedex-kevinah95/databases/(default)/documents"
+    } else {
+        "https://firestore.googleapis.com/v1/projects/pokedex-kevinah95/databases/(default)/documents"
+    }
+}
+

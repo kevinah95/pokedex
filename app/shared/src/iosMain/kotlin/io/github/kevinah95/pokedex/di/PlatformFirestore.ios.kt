@@ -15,4 +15,5 @@
  */
 package io.github.kevinah95.pokedex.di
 
-actual fun getFirestoreEmulatorHost(): String = "127.0.0.1"
+actual fun getFirestoreBaseUrl(): String = "http://127.0.0.1:8080/v1/projects/pokedex-kevinah95/databases/(default)/documents"
+

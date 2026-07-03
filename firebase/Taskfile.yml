@@ -17,9 +17,29 @@ tasks:
       - python populate_firestore.py
 
   deploy:
-    desc: Deploy Firestore rules and indexes to production
+    desc: Build web distribution and deploy all services (Firestore & Hosting) to production
+    cmds:
+      - ../app/gradlew -p ../app :webApp:composeCompatibilityBrowserDistribution
+      - rm -rf public
+      - mkdir -p public
+      - cp -R ../app/webApp/build/dist/composeWebCompatibility/productionExecutable/ public/
+      - npx -y firebase-tools@latest deploy
+
+  deploy:firestore:
+    desc: Deploy only Firestore rules and indexes to production
     cmds:
       - npx -y firebase-tools@latest deploy --only firestore
+
+  deploy:web:
+    desc: Build and deploy only the Web application to production hosting
+    cmds:
+      - ../app/gradlew -p ../app :webApp:composeCompatibilityBrowserDistribution
+      - rm -rf public
+      - mkdir -p public
+      - cp -R ../app/webApp/build/dist/composeWebCompatibility/productionExecutable/ public/
+      - npx -y firebase-tools@latest deploy --only hosting
+
+
 
   seed:prod:
     desc: Seed the production Firestore with PokeAPI data
