@@ -9,3 +9,8 @@ tasks:
   default:
     cmds:
       - task --list
+
+  serve-docs:
+    desc: Serve the documentation directory on http://localhost:8080
+    cmds:
+      - python3 -m http.server 8080 --directory docs

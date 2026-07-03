@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokedex Technical Architecture Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="html2canvas.min.js"></script>
+  <script src="jspdf.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      margin-bottom: 2rem;
+    }
+    
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+    
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+    
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+    
+    svg {
+      width: 100%;
+      min-width: 960px;
+      display: block;
+    }
+    
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+    
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    
+    .card h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    
+    .card ul {
+      list-style: none;
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+    
+    .card li {
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      color: #475569;
+      font-size: 0.75rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+      flex-shrink: 0;
+      align-items: center;
+      position: relative;
+    }
+    .toolbar-toggle {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #334155;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      transition: all 0.2s;
+    }
+    .toolbar-toggle:hover { color: white; background: rgba(51, 65, 85, 0.8); border-color: #475569; }
+    .toolbar-actions {
+      display: none;
+      gap: 0.5rem;
+    }
+    .toolbar.expanded .toolbar-actions { display: flex; }
+    .toolbar-actions button {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .toolbar-actions button:hover {
+      background: rgba(51, 65, 85, 0.8);
+      color: white;
+      border-color: #475569;
+    }
+
+    @media print {
+      body { background: #020617; padding: 1rem; }
+      .toolbar { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="capture-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Pokedex Architecture Diagram</h1>
+        <div class="toolbar" id="diagram-toolbar">
+          <button class="toolbar-toggle" onclick="toggleToolbar()">Export Options ▾</button>
+          <div class="toolbar-actions">
+            <button onclick="exportPNG()">Download PNG</button>
+            <button onclick="exportPDF()">Download PDF</button>
+            <button onclick="copyHTML()">Copy HTML</button>
+          </div>
+        </div>
+      </div>
+      <p class="subtitle">Platform integrations, shared Kotlin Multiplatform (KMP) layers, and internal components</p>
+    </div>
+    
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Definitions for Grid and Arrowheads -->
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="arrowhead-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+          </marker>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="1000" height="720" fill="url(#grid)" />
+
+        <!-- CONNECTION ARROWS (Rendered behind boxes via document order) -->
+        
+        <!-- Platforms to UI Layer -->
+        <path d="M200,130 L200,165 L210,165 L210,215" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <path d="M500,130 L500,165 L210,165 L210,215" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <path d="M800,130 L800,165 L210,165 L210,215" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- Platforms to KoinHelper -->
+        <path d="M200,130 L200,150 L820,150 L820,215" stroke="#fb7185" stroke-dasharray="3,3" stroke-width="1.2" fill="none" marker-end="url(#arrowhead-rose)"/>
+        <path d="M500,130 L500,150 L820,150 L820,215" stroke="#fb7185" stroke-dasharray="3,3" stroke-width="1.2" fill="none" marker-end="url(#arrowhead-rose)"/>
+        <path d="M800,130 L800,150 L820,150 L820,215" stroke="#fb7185" stroke-dasharray="3,3" stroke-width="1.2" fill="none" marker-end="url(#arrowhead-rose)"/>
+
+        <!-- App.kt to ViewModels -->
+        <path d="M340,245 L380,245" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- ViewModels to Repository -->
+        <path d="M520,275 L520,300 L210,300 L210,395" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        
+        <!-- ViewModels to Domain Entities -->
+        <path d="M520,275 L520,312" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- Repository to Domain Entities -->
+        <path d="M250,395 L250,357" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- Repository to RemoteDS -->
+        <path d="M340,430 L380,430" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- RemoteDS to Ktor Client -->
+        <path d="M420,465 L420,490 L210,490 L210,515" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- RemoteDS to PlatformFirestore -->
+        <path d="M520,465 L520,515" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- Ktor Client to Firestore Database -->
+        <path d="M210,565 L210,635" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- App.kt Image Loading to Sprite CDN (Routed along the left border to avoid crossing) -->
+        <path d="M120,275 L120,285 L50,285 L50,600 L690,600 L690,635" stroke="#64748b" stroke-dasharray="4,2" stroke-width="1.2" fill="none" marker-end="url(#arrowhead)"/>
+
+        <!-- KoinHelper to Koin Modules -->
+        <path d="M820,265 L820,280" stroke="#fb7185" stroke-width="1.5" fill="none" marker-end="url(#arrowhead-rose)"/>
+
+
+        <!-- BOUNDARIES / REGIONS -->
+
+        <!-- Client Applications Region -->
+        <rect x="40" y="40" width="920" height="110" rx="12" fill="none" stroke="#94a3b8" stroke-dasharray="8,4" stroke-width="1.5"/>
+        <text x="60" y="32" fill="#94a3b8" font-size="9" font-weight="bold" letter-spacing="1">PLATFORM APPLICATION WRAPPERS</text>
+
+        <!-- Shared Core Region -->
+        <rect x="40" y="180" width="920" height="420" rx="12" fill="none" stroke="#34d399" stroke-dasharray="8,4" stroke-width="1.5"/>
+        <text x="60" y="172" fill="#34d399" font-size="9" font-weight="bold" letter-spacing="1">SHARED CORE (:shared KOTLIN MULTIPLATFORM MODULE)</text>
+
+        <!-- External Systems Region -->
+        <rect x="40" y="620" width="920" height="80" rx="12" fill="none" stroke="#64748b" stroke-dasharray="8,4" stroke-width="1.5"/>
+        <text x="60" y="612" fill="#64748b" font-size="9" font-weight="bold" letter-spacing="1">EXTERNAL DATA & SERVICES</text>
+
+
+        <!-- COMPONENT NODES -->
+
+        <!-- 1. Platforms -->
+        <!-- Android App -->
+        <rect x="80" y="65" width="240" height="65" rx="6" fill="#0f172a"/>
+        <rect x="80" y="65" width="240" height="65" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="200" y="90" text-anchor="middle" fill="#22d3ee" font-size="11" font-weight="700">Android Application</text>
+        <text x="200" y="105" text-anchor="middle" fill="#94a3b8" font-size="8">MainActivity · Jetpack Compose</text>
+        <text x="200" y="117" text-anchor="middle" fill="#64748b" font-size="7">Bootstraps DI & calls App() entrypoint</text>
+
+        <!-- iOS App -->
+        <rect x="380" y="65" width="240" height="65" rx="6" fill="#0f172a"/>
+        <rect x="380" y="65" width="240" height="65" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="500" y="90" text-anchor="middle" fill="#22d3ee" font-size="11" font-weight="700">iOS Application</text>
+        <text x="500" y="105" text-anchor="middle" fill="#94a3b8" font-size="8">iOSApp.swift · ContentView.swift</text>
+        <text x="500" y="117" text-anchor="middle" fill="#64748b" font-size="7">SwiftUI wraps KMP MainViewController</text>
+
+        <!-- Web App -->
+        <rect x="680" y="65" width="240" height="65" rx="6" fill="#0f172a"/>
+        <rect x="680" y="65" width="240" height="65" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="800" y="90" text-anchor="middle" fill="#22d3ee" font-size="11" font-weight="700">Web Application</text>
+        <text x="800" y="105" text-anchor="middle" fill="#94a3b8" font-size="8">main.kt · Compose HTML (Wasm/JS)</text>
+        <text x="800" y="117" text-anchor="middle" fill="#64748b" font-size="7">Runs ComposeViewport and App()</text>
+
+
+        <!-- 2. Shared Core Internals -->
+        
+        <!-- Presentation Layer Boundary -->
+        <rect x="60" y="200" width="620" height="85" rx="8" fill="none" stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1"/>
+        <text x="75" y="196" fill="#475569" font-size="8" font-weight="bold">PRESENTATION LAYER (Compose Multiplatform)</text>
+
+        <!-- App.kt & Navigation -->
+        <rect x="80" y="215" width="260" height="60" rx="6" fill="#0f172a"/>
+        <rect x="80" y="215" width="260" height="60" rx="6" fill="rgba(8, 51, 68, 0.3)" stroke="#22d3ee" stroke-width="1.2"/>
+        <text x="210" y="235" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="600">App.kt & Navigation.kt</text>
+        <text x="210" y="249" text-anchor="middle" fill="#94a3b8" font-size="8">NavDisplay & Navigation 3 Routing</text>
+        <text x="210" y="261" text-anchor="middle" fill="#64748b" font-size="7">List Screen, Detail Screen & Theme setup</text>
+
+        <!-- ViewModels -->
+        <rect x="380" y="215" width="280" height="60" rx="6" fill="#0f172a"/>
+        <rect x="380" y="215" width="280" height="60" rx="6" fill="rgba(8, 51, 68, 0.3)" stroke="#22d3ee" stroke-width="1.2"/>
+        <text x="520" y="235" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="600">ViewModels</text>
+        <text x="520" y="249" text-anchor="middle" fill="#94a3b8" font-size="8">PokemonViewModel & DetailViewModel</text>
+        <text x="520" y="261" text-anchor="middle" fill="#64748b" font-size="7">Exposes state flow updates and handles actions</text>
+
+
+        <!-- Domain Layer Boundary -->
+        <rect x="60" y="300" width="620" height="65" rx="8" fill="none" stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1"/>
+        <text x="75" y="296" fill="#475569" font-size="8" font-weight="bold">DOMAIN LAYER</text>
+
+        <!-- Domain Entities -->
+        <rect x="230" y="312" width="280" height="45" rx="6" fill="#0f172a"/>
+        <rect x="230" y="312" width="280" height="45" rx="6" fill="rgba(6, 78, 59, 0.3)" stroke="#34d399" stroke-width="1.2"/>
+        <text x="370" y="329" text-anchor="middle" fill="#34d399" font-size="10" font-weight="600">Domain Entities</text>
+        <text x="370" y="343" text-anchor="middle" fill="#94a3b8" font-size="8">Pokemon.kt & PokemonDetail.kt models</text>
+
+
+        <!-- Data Layer Boundary -->
+        <rect x="60" y="380" width="620" height="100" rx="8" fill="none" stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1"/>
+        <text x="75" y="376" fill="#475569" font-size="8" font-weight="bold">DATA LAYER</text>
+
+        <!-- Repository -->
+        <rect x="80" y="395" width="260" height="70" rx="6" fill="#0f172a"/>
+        <rect x="80" y="395" width="260" height="70" rx="6" fill="rgba(76, 29, 149, 0.3)" stroke="#a78bfa" stroke-width="1.2"/>
+        <text x="210" y="415" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">PokemonRepository</text>
+        <text x="210" y="429" text-anchor="middle" fill="#94a3b8" font-size="8">IPokemonRepository Impl</text>
+        <text x="210" y="441" text-anchor="middle" fill="#64748b" font-size="7">Caches & retrieves database/network state</text>
+
+        <!-- Remote Data Source -->
+        <rect x="380" y="395" width="280" height="70" rx="6" fill="#0f172a"/>
+        <rect x="380" y="395" width="280" height="70" rx="6" fill="rgba(76, 29, 149, 0.3)" stroke="#a78bfa" stroke-width="1.2"/>
+        <text x="520" y="415" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">PokemonRemoteDataSource</text>
+        <text x="520" y="429" text-anchor="middle" fill="#94a3b8" font-size="8">IPokemonRemoteDataSource Impl</text>
+        <text x="520" y="441" text-anchor="middle" fill="#64748b" font-size="7">Translates JSON responses to model entities</text>
+
+
+        <!-- Infrastructure Layer Boundary -->
+        <rect x="60" y="495" width="620" height="85" rx="8" fill="none" stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1"/>
+        <text x="75" y="491" fill="#475569" font-size="8" font-weight="bold">INFRASTRUCTURE & NETWORK LAYER</text>
+
+        <!-- Ktor Client -->
+        <rect x="80" y="510" width="260" height="55" rx="6" fill="#0f172a"/>
+        <rect x="80" y="510" width="260" height="55" rx="6" fill="rgba(251, 146, 60, 0.25)" stroke="#fb923c" stroke-width="1.2"/>
+        <text x="210" y="530" text-anchor="middle" fill="#fb923c" font-size="10" font-weight="600">Ktor HttpClient</text>
+        <text x="210" y="544" text-anchor="middle" fill="#94a3b8" font-size="8">Common Ktor REST Engine & JSON Client</text>
+
+        <!-- PlatformFirestore (expect/actual configuration) -->
+        <rect x="380" y="510" width="280" height="55" rx="6" fill="#0f172a"/>
+        <rect x="380" y="510" width="280" height="55" rx="6" fill="rgba(251, 146, 60, 0.25)" stroke="#fb923c" stroke-width="1.2"/>
+        <text x="520" y="530" text-anchor="middle" fill="#fb923c" font-size="10" font-weight="600">PlatformFirestore</text>
+        <text x="520" y="544" text-anchor="middle" fill="#94a3b8" font-size="8">expect/actual Database URL Settings</text>
+
+
+        <!-- Dependency Injection Boundary (Koin) -->
+        <rect x="700" y="200" width="240" height="380" rx="8" fill="none" stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1"/>
+        <text x="715" y="196" fill="#475569" font-size="8" font-weight="bold">DEPENDENCY INJECTION (Koin)</text>
+
+        <!-- KoinHelper -->
+        <rect x="720" y="215" width="200" height="50" rx="6" fill="#0f172a"/>
+        <rect x="720" y="215" width="200" height="50" rx="6" fill="rgba(136, 19, 55, 0.3)" stroke="#fb7185" stroke-width="1.2"/>
+        <text x="820" y="235" text-anchor="middle" fill="#fb7185" font-size="10" font-weight="600">KoinHelper.kt</text>
+        <text x="820" y="249" text-anchor="middle" fill="#94a3b8" font-size="8">initKoin() bootstrap logic</text>
+
+        <!-- Koin Modules -->
+        <rect x="720" y="280" width="200" height="285" rx="6" fill="#0f172a"/>
+        <rect x="720" y="280" width="200" height="285" rx="6" fill="rgba(136, 19, 55, 0.15)" stroke="#fb7185" stroke-dasharray="4,4" stroke-width="1"/>
+        <text x="820" y="300" text-anchor="middle" fill="#fb7185" font-size="10" font-weight="600">Koin Modules</text>
+        
+        <text x="735" y="325" fill="#e2e8f0" font-size="8" font-weight="600">Common Modules:</text>
+        <text x="745" y="340" fill="#94a3b8" font-size="8">• SharedModule.kt</text>
+        <text x="745" y="355" fill="#94a3b8" font-size="8">• PresentationModule.kt</text>
+        <text x="745" y="370" fill="#94a3b8" font-size="8">• DataModule.kt</text>
+        
+        <text x="735" y="400" fill="#e2e8f0" font-size="8" font-weight="600">Platform Bindings:</text>
+        <text x="745" y="415" fill="#94a3b8" font-size="8">• PlatformModule.kt (expect)</text>
+        <text x="745" y="430" fill="#94a3b8" font-size="8">• NetworkModule.kt (expect)</text>
+        
+        <text x="735" y="460" fill="#64748b" font-size="7.5" font-weight="600">Actual Impls:</text>
+        <text x="745" y="475" fill="#64748b" font-size="7.5">• *.android.kt</text>
+        <text x="745" y="490" fill="#64748b" font-size="7.5">• *.ios.kt</text>
+        <text x="745" y="505" fill="#64748b" font-size="7.5">• *.js.kt</text>
+        <text x="745" y="520" fill="#64748b" font-size="7.5">• *.wasmJs.kt</text>
+
+
+        <!-- 3. External Systems -->
+        <!-- Cloud Firestore -->
+        <rect x="150" y="635" width="320" height="50" rx="6" fill="#0f172a"/>
+        <rect x="150" y="635" width="320" height="50" rx="6" fill="rgba(30, 41, 59, 0.4)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="310" y="655" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="600">🔥 Cloud Firestore Database</text>
+        <text x="310" y="669" text-anchor="middle" fill="#94a3b8" font-size="8">Stores Pokémon documents, stats, and evolution configurations</text>
+
+        <!-- Sprite Assets CDN -->
+        <rect x="530" y="635" width="320" height="50" rx="6" fill="#0f172a"/>
+        <rect x="530" y="635" width="320" height="50" rx="6" fill="rgba(30, 41, 59, 0.4)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="690" y="655" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="600">🖼️ Sprite Image CDN</text>
+        <text x="690" y="669" text-anchor="middle" fill="#94a3b8" font-size="8">Serves high-resolution PNG sprite files loaded via Coil</text>
+
+      </svg>
+    </div>
+    
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Platform Wrappers</h3>
+        </div>
+        <ul>
+          <li><strong>Android Application:</strong> Written in Kotlin using Jetpack Compose UI. Bootstraps the application via `MainActivity` by calling Koin initialization and rendering `App()`.</li>
+          <li><strong>iOS Application:</strong> Native Swift project utilizing SwiftUI. Loads the shared module through Swift Package Manager and wraps KMP's `MainViewController` inside a SwiftUI `ContentView`.</li>
+          <li><strong>Web Application:</strong> Compiles to Wasm and Javascript. Bootstraps via `main.kt` by creating a `ComposeViewport` and running the shared `App()` code on HTML Canvas.</li>
+        </ul>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>KMP Layer Separation</h3>
+        </div>
+        <ul>
+          <li><strong>Presentation Layer:</strong> Entirely shared using Compose Multiplatform. Contains ViewModels and the `App.kt` routing structure driven by JetBrains Navigation 3.</li>
+          <li><strong>Domain Layer:</strong> Pure Kotlin definitions. Contains data entities representing Pokedex entries and details, isolating repository implementation details.</li>
+          <li><strong>Data Layer:</strong> Encapsulates all data access. The `PokemonRepository` mediates between domain models and remote network payloads returned by `PokemonRemoteDataSource`.</li>
+        </ul>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot rose"></div>
+          <h3>Dependency Injection & Network</h3>
+        </div>
+        <ul>
+          <li><strong>Koin DI Setup:</strong> Instantiated through a common `initKoin` helper. Koin manages the lifecycles of ViewModels, repositories, and platform-specific implementations.</li>
+          <li><strong>Infrastructure & Network:</strong> Utilizes Ktor Client with content negotiation and Kotlinx Serialization. Networking engines are selected per-platform (OkHttp on Android, Darwin on iOS, browser engines on Web).</li>
+          <li><strong>expect/actual Config:</strong> Used to define platform-specific behavior for dependency bindings (`PlatformModule`) and custom database endpoints (`PlatformFirestore`).</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer">
+      Generated using the Cocoon-AI Architecture Diagram specification · Pokedex Project
+    </div>
+  </div>
+
+  <script>
+    function toggleToolbar() {
+      const toolbar = document.getElementById('diagram-toolbar');
+      toolbar.classList.toggle('expanded');
+    }
+    
+    async function exportPNG() {
+      const container = document.getElementById('capture-container');
+      const canvas = await html2canvas(container, {
+        backgroundColor: '#020617',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        ignoreElements: (el) => el.classList.contains('toolbar-toggle') || el.classList.contains('toolbar-actions')
+      });
+      const link = document.createElement('a');
+      link.download = 'pokedex-architecture.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+    
+    async function exportPDF() {
+      const container = document.getElementById('capture-container');
+      const canvas = await html2canvas(container, {
+        backgroundColor: '#020617',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        ignoreElements: (el) => el.classList.contains('toolbar-toggle') || el.classList.contains('toolbar-actions')
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'l' : 'p',
+        unit: 'px',
+        format: [canvas.width / 2, canvas.height / 2]
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save('pokedex-architecture.pdf');
+    }
+    
+    function copyHTML() {
+      const htmlContent = document.documentElement.outerHTML;
+      navigator.clipboard.writeText(htmlContent).then(() => {
+        alert('HTML template copied to clipboard!');
+      }).catch(err => {
+        console.error('Could not copy text: ', err);
+      });
+    }
+  </script>
+</body>
+</html>
