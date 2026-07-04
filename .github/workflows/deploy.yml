@@ -39,6 +39,10 @@ jobs:
         working-directory: app
         run: ./gradlew :webApp:composeCompatibilityBrowserDistribution
 
+      - name: Copy Documentation to Web Build Target
+        run: |
+          mkdir -p app/webApp/build/dist/composeWebCompatibility/productionExecutable/docs
+          cp -r docs/* app/webApp/build/dist/composeWebCompatibility/productionExecutable/docs/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
