@@ -1,0 +1,43 @@
+name: "🎯 Épica (Epic)"
+description: "Crea una Épica de alto nivel para agrupar múltiples Historias de Usuario de un módulo o funcionalidad."
+title: "[ÉPICA XX] "
+labels: ["type: epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Usa esta plantilla para definir una **Épica** que agrupe un conjunto coherente de Historias de Usuario.
+  - type: textarea
+    id: objective
+    attributes:
+      label: "🎯 Objetivo de la Épica"
+      description: "¿Qué buscamos lograr a nivel macro con esta épica?"
+      placeholder: "Describa el propósito general de la épica..."
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: "💼 Valor de Negocio / Jugabilidad"
+      description: "¿Qué valor aporta al jugador o a la arquitectura del proyecto?"
+      placeholder: "Permite que el jugador..."
+    validations:
+      required: true
+  - type: textarea
+    id: stories
+    attributes:
+      label: "📋 Historias de Usuario Vinculadas (Sub-issues)"
+      description: "Lista las historias de usuario que componen esta épica."
+      value: |
+        - [ ] #
+        - [ ] #
+  - type: textarea
+    id: dod
+    attributes:
+      label: "✅ Definition of Done (DoD) de la Épica"
+      description: "Condiciones que deben cumplirse para dar por terminada la épica."
+      value: |
+        - [ ] Todas las Historias de Usuario vinculadas están completadas y verificadas.
+        - [ ] El módulo `commonMain` compila sin errores ni warnings críticos.
+        - [ ] Las pruebas unitarias asociadas pasan exitosamente.
+        - [ ] La documentación y el Diagrama de Arquitectura están actualizados en `docs/`.
