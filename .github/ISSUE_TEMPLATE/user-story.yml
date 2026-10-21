@@ -1,0 +1,73 @@
+name: "📖 Historia de Usuario (User Story)"
+description: "Crea una Historia de Usuario con formato Como/Quiero/Para, Criterios de Aceptación (Gherkin) y Definition of Done."
+title: "[US-XX] "
+labels: ["type: user-story"]
+body:
+  - type: input
+    id: parent_epic
+    attributes:
+      label: "🎯 Épica Padre"
+      description: "Número del Issue de la Épica a la que pertenece (ej. #4, #5, #6)"
+      placeholder: "#4"
+    validations:
+      required: true
+  - type: dropdown
+    id: story_points
+    attributes:
+      label: "⏱️ Estimación (Story Points - Fibonacci)"
+      options:
+        - "1 Story Point (Trivial)"
+        - "2 Story Points (Pequeña)"
+        - "3 Story Points (Media)"
+        - "5 Story Points (Compleja)"
+        - "8 Story Points (Muy Compleja)"
+        - "13 Story Points (Requiere subdivisión)"
+    validations:
+      required: true
+  - type: textarea
+    id: user_story
+    attributes:
+      label: "📖 Enunciado de la Historia de Usuario"
+      description: "Usa el formato estándar: Como [rol], quiero [acción], para [beneficio]."
+      value: |
+        > **Como** [jugador / usuario / desarrollador],
+        > **quiero** [realizar una acción o tener una funcionalidad],
+        > **para** [obtener un beneficio o valor claro].
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: "🧪 Criterios de Aceptación (Gherkin: Dado / Cuando / Entonces)"
+      description: "Define los escenarios verificables para aceptar la historia."
+      value: |
+        1. **Escenario 1: [Nombre del escenario]**
+           - **Dado** que [contexto inicial],
+           - **Cuando** [ocurre una acción o evento],
+           - **Entonces** [resultado esperado verificable].
+        2. **Escenario 2: [Nombre del escenario alternativo/borde]**
+           - **Dado** que [contexto],
+           - **Cuando** [acción],
+           - **Entonces** [resultado esperado].
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: "🛠️ Tareas Técnicas"
+      description: "Desglose técnico de implementación."
+      value: |
+        - [ ] Implementar lógica en `shared/src/commonMain`.
+        - [ ] Conectar estado con la interfaz gráfica / escena.
+        - [ ] Escribir pruebas unitarias para validar los casos principales.
+  - type: textarea
+    id: dod
+    attributes:
+      label: "✅ Definition of Done (DoD)"
+      description: "Lista de verificación obligatoria antes de mover la tarjeta a Done."
+      value: |
+        - [ ] Todos los Criterios de Aceptación se cumplen sin errores.
+        - [ ] Código alojado en `commonMain` siguiendo la arquitectura del proyecto.
+        - [ ] Pruebas unitarias ejecutadas y pasando en verde.
+        - [ ] *Pull Request* revisado y aprobado por al menos un compañero del equipo.
+        - [ ] Sin errores ni *crashes* en ejecución móvil (Android / iOS) ni Desktop.
